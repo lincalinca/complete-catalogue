@@ -23,6 +23,7 @@ export default function CataloguePage() {
   const [selectedApp, setSelectedApp] = useState<string>("all");
   const [selectedDirectory, setSelectedDirectory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [uiFilter, setUiFilter] = useState<"all" | "ui" | "logic">("all");
 
   useEffect(() => {
     fetchComponents();
@@ -58,6 +59,10 @@ export default function CataloguePage() {
       searchQuery &&
       !component.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
+      return false;
+    if (uiFilter === "ui" && !component.uiCharacteristics.isUiComponent)
+      return false;
+    if (uiFilter === "logic" && component.uiCharacteristics.isUiComponent)
       return false;
     return true;
   });
@@ -144,7 +149,7 @@ export default function CataloguePage() {
 
         {/* Filters */}
         <div className="bg-black/40 border border-purple-500/30 rounded-lg p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div>
               <label className="block text-sm font-medium text-purple-300 mb-2">
@@ -195,11 +200,28 @@ export default function CataloguePage() {
                 ))}
               </select>
             </div>
+
+            {/* UI Type Filter */}
+            <div>
+              <label className="block text-sm font-medium text-purple-300 mb-2">
+                Component Type
+              </label>
+              <select
+                value={uiFilter}
+                onChange={(e) => setUiFilter(e.target.value as "all" | "ui" | "logic")}
+                className="w-full px-4 py-2 bg-black/60 border border-purple-500/30 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+              >
+                <option value="all">All Components</option>
+                <option value="ui">UI Components (styled)</option>
+                <option value="logic">Logic Components</option>
+              </select>
+            </div>
           </div>
 
           {/* Active Filters */}
           {(selectedApp !== "all" ||
             selectedDirectory !== "all" ||
+            uiFilter !== "all" ||
             searchQuery) && (
             <div className="mt-4 flex flex-wrap gap-2">
               {selectedApp !== "all" && (
@@ -218,6 +240,14 @@ export default function CataloguePage() {
                   Dir: {selectedDirectory} ✕
                 </button>
               )}
+              {uiFilter !== "all" && (
+                <button
+                  onClick={() => setUiFilter("all")}
+                  className="px-3 py-1 bg-purple-500/20 border border-purple-500/50 rounded text-sm text-purple-300 hover:bg-purple-500/30"
+                >
+                  Type: {uiFilter === "ui" ? "UI Only" : "Logic Only"} ✕
+                </button>
+              )}
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
@@ -230,6 +260,7 @@ export default function CataloguePage() {
                 onClick={() => {
                   setSelectedApp("all");
                   setSelectedDirectory("all");
+                  setUiFilter("all");
                   setSearchQuery("");
                 }}
                 className="px-3 py-1 bg-red-500/20 border border-red-500/50 rounded text-sm text-red-300 hover:bg-red-500/30"
@@ -260,6 +291,21 @@ export default function CataloguePage() {
                     {component.hasProps && (
                       <span className="px-2 py-0.5 bg-blue-500/20 border border-blue-500/50 rounded text-xs text-blue-300">
                         Props
+                      </span>
+                    )}
+                    {component.uiCharacteristics.hasTailwind && (
+                      <span className="px-2 py-0.5 bg-cyan-500/20 border border-cyan-500/50 rounded text-xs text-cyan-300">
+                        Tailwind
+                      </span>
+                    )}
+                    {component.uiCharacteristics.hasStyledComponents && (
+                      <span className="px-2 py-0.5 bg-pink-500/20 border border-pink-500/50 rounded text-xs text-pink-300">
+                        Styled
+                      </span>
+                    )}
+                    {!component.uiCharacteristics.isUiComponent && (
+                      <span className="px-2 py-0.5 bg-gray-500/20 border border-gray-500/50 rounded text-xs text-gray-300">
+                        Logic
                       </span>
                     )}
                   </div>

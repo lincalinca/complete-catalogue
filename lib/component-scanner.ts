@@ -14,6 +14,13 @@ export interface ComponentInfo {
   directory: string;
   hasProps: boolean;
   propsInterface?: string;
+  uiCharacteristics: {
+    hasTailwind: boolean;
+    hasStyledComponents: boolean;
+    hasCssModules: boolean;
+    hasInlineStyles: boolean;
+    isUiComponent: boolean; // Any of the above
+  };
 }
 
 const APP_PATHS = {
@@ -62,6 +69,34 @@ function hasPropsInterface(content: string): boolean {
   return (
     /interface\s+\w+Props/.test(content) || /type\s+\w+Props\s*=/.test(content)
   );
+}
+
+/**
+ * Analyze UI characteristics of a component
+ */
+function analyzeUiCharacteristics(content: string) {
+  // Check for Tailwind classes (className with common Tailwind patterns)
+  const hasTailwind = /className=["'`][^"'`]*(bg-|text-|flex|grid|p-|m-|rounded|border|shadow|hover:|focus:)/i.test(content);
+  
+  // Check for styled-components
+  const hasStyledComponents = /styled\.\w+/.test(content) || /import.*styled.*from.*styled-components/.test(content);
+  
+  // Check for CSS modules
+  const hasCssModules = /import.*styles.*from.*\.module\.(css|scss|sass)/.test(content) || /styles\.\w+/.test(content);
+  
+  // Check for inline styles
+  const hasInlineStyles = /style=\{\{/.test(content);
+  
+  // Determine if this is a UI component (has any styling)
+  const isUiComponent = hasTailwind || hasStyledComponents || hasCssModules || hasInlineStyles;
+  
+  return {
+    hasTailwind,
+    hasStyledComponents,
+    hasCssModules,
+    hasInlineStyles,
+    isUiComponent,
+  };
 }
 
 /**
@@ -128,6 +163,7 @@ function scanDirectory(
           directory: directory === "." ? "/" : `/${directory}`,
           hasProps: hasPropsInterface(content),
           propsInterface: extractPropsInterface(content),
+          uiCharacteristics: analyzeUiCharacteristics(content),
         });
       } catch (error) {
         console.error(`[Scanner] Error reading ${fullPath}:`, error);
