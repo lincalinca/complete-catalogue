@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { ComponentInfo } from "@/lib/component-scanner";
 
 interface ApiResponse {
@@ -46,6 +46,34 @@ export default function CataloguePage() {
       setLoading(false);
     }
   }
+
+  // Calculate available directories based on current filters (excluding directory filter)
+  const availableDirectories = useMemo(() => {
+    if (!data?.components) return [];
+    
+    const componentsForDirectories = data.components.filter((component) => {
+      // Apply all filters EXCEPT directory filter
+      if (selectedApp !== "all" && component.app !== selectedApp) return false;
+      if (uiFilter === "ui" && !component.uiCharacteristics.isUiComponent)
+        return false;
+      if (uiFilter === "logic" && component.uiCharacteristics.isUiComponent)
+        return false;
+      return true;
+    });
+    
+    const dirs = new Set(componentsForDirectories.map((c) => c.directory));
+    return Array.from(dirs).sort();
+  }, [data?.components, selectedApp, uiFilter]);
+
+  // Reset directory filter if it becomes invalid
+  useEffect(() => {
+    if (
+      selectedDirectory !== "all" &&
+      !availableDirectories.includes(selectedDirectory)
+    ) {
+      setSelectedDirectory("all");
+    }
+  }, [availableDirectories, selectedDirectory]);
 
   // Filter components
   const filteredComponents = data?.components.filter((component) => {
@@ -186,14 +214,21 @@ export default function CataloguePage() {
             <div>
               <label className="block text-sm font-medium text-purple-300 mb-2">
                 Directory
+                {availableDirectories.length < (data?.directories.length || 0) && (
+                  <span className="ml-2 text-xs text-purple-400/60">
+                    ({availableDirectories.length} available)
+                  </span>
+                )}
               </label>
               <select
                 value={selectedDirectory}
                 onChange={(e) => setSelectedDirectory(e.target.value)}
                 className="w-full px-4 py-2 bg-black/60 border border-purple-500/30 rounded-lg text-white focus:border-purple-500 focus:outline-none"
               >
-                <option value="all">All Directories</option>
-                {data?.directories.map((dir) => (
+                <option value="all">
+                  All Directories {availableDirectories.length > 0 ? `(${availableDirectories.length})` : ""}
+                </option>
+                {availableDirectories.map((dir) => (
                   <option key={dir} value={dir}>
                     {dir}
                   </option>
