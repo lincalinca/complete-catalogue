@@ -1,30 +1,43 @@
 # Crescender Complete Component Catalogue
 
-**Universal UI component reference across all Crescender apps**
+**Universal UI component reference across all Crescender apps with live previews**
 
 ## Overview
 
-This is a standalone Next.js application that automatically discovers and catalogues all React components across the entire Crescender ecosystem:
+This is a standalone Next.js application that automatically discovers and catalogues all React components across the entire Crescender ecosystem with **interactive visual previews** and **prop controls**.
 
 - **crescender-core** (Main app)
 - **crescender-account** (Auth service)
 - **geargrabber** (Receipt OCR app)
 - **clavet** (Songwriting AI app)
 
-The catalogue **does not host** the components - it dynamically discovers them from their source locations and provides a searchable, filterable reference.
-
 ---
 
-## Features
+## ✨ Features
 
+### Component Discovery
 ✅ **Automatic Discovery** - Zero manual configuration, folder/file-based scanning  
 ✅ **Real-time Scanning** - Always reflects current state of all apps  
+✅ **Cross-App Coverage** - Discovers components from all 4 apps  
+
+### Visual Previews
+✅ **Live Component Rendering** - See components visually with mock data  
+✅ **Interactive Prop Controls** - Modify props in real-time  
+✅ **Smart Mocks** - Intelligent rendering based on component type  
+✅ **Multiple View Modes** - Mock preview or code view  
+
+### Developer Tools
+✅ **Props Detection** - Automatically parses TypeScript prop interfaces  
+✅ **Control Generation** - Creates appropriate inputs (text, number, boolean, select, color)  
+✅ **Copy Functions** - Copy file paths and import statements  
+✅ **Source Code View** - See the full component source  
+✅ **Usage Examples** - Generated code examples with current props  
+
+### Filtering & Search
 ✅ **App Filtering** - Filter by core, account, geargrabber, or clavet  
 ✅ **Directory Filtering** - Browse by component directory  
 ✅ **Search** - Find components by name  
-✅ **Props Detection** - Shows which components have props interfaces  
-✅ **Code Snippets** - Copy file paths and import statements  
-✅ **Props Inspection** - View prop interfaces inline  
+✅ **Stats Dashboard** - Component counts per app  
 
 ---
 
@@ -45,12 +58,68 @@ npm run dev
 
 Then open [http://localhost:3000](http://localhost:3000)
 
-### Build
+---
 
-```bash
-npm run build
-npm start
-```
+## How to Use
+
+### 1. Browse Components
+
+**Main Page:** [http://localhost:3000](http://localhost:3000)
+- View all 550+ components
+- Click app stat cards to filter
+- Use search and directory filters
+
+### 2. View Component Details
+
+Click **"View Preview & Props →"** on any component card to:
+- See live visual preview
+- Modify props with interactive controls
+- View source code
+- Copy import statements
+- See usage examples
+
+### 3. Interact with Props
+
+The preview page provides controls for each prop:
+- **String:** Text input
+- **Number:** Number input
+- **Boolean:** Checkbox
+- **Enum/Union:** Dropdown select
+- **Color:** Color picker
+- **ReactNode:** Textarea for content
+
+Change any prop and see the preview update!
+
+### 4. View Modes
+
+Toggle between:
+- **Mock Preview:** Visual representation with smart rendering
+- **Code View:** See the JSX code with current props
+
+---
+
+## Component Rendering
+
+### Smart Mock Rendering
+
+The catalogue includes intelligent mock rendering for common component types:
+
+**Buttons:** Renders as styled button with hover states  
+**Cards:** Shows bordered card with title and description  
+**Inputs:** Displays input field with label and placeholder  
+**Badges:** Renders styled badge  
+**Alerts:** Shows colored alert with icon  
+**Generic:** Shows component info with props JSON  
+
+### Limitations
+
+This is a **mock preview system**, not full live rendering because:
+1. Components may require specific contexts (theme, auth, etc.)
+2. Components may depend on app-specific utilities
+3. Some components need data from APIs
+4. Complex state management would be needed
+
+The mock system provides **visual guidance** for how components look and what props they accept.
 
 ---
 
@@ -58,164 +127,108 @@ npm start
 
 ### 1. Component Discovery
 
-The scanner (`lib/component-scanner.ts`) recursively searches these directories:
+Scanner (`lib/component-scanner.ts`) recursively searches:
+- `/Users/linc/Dev-Work/Crescender/crescender-core/components`
+- `/Users/linc/Dev-Work/Crescender/crescender-core/tmp/crescender-account/components`
+- `/Users/linc/Dev-Work/Crescender/crescender-core/tmp/geargrabber/components`
+- `/Users/linc/Dev-Work/Crescender/clavet/components`
 
-```
-/Users/linc/Dev-Work/Crescender/crescender-core/components
-/Users/linc/Dev-Work/Crescender/crescender-core/tmp/crescender-account/components
-/Users/linc/Dev-Work/Crescender/crescender-core/tmp/geargrabber/components
-/Users/linc/Dev-Work/Crescender/clavet/components
-```
+### 2. Props Parsing
 
-### 2. Component Analysis
+Parser (`lib/component-renderer.ts`) extracts:
+- Prop names
+- Prop types (from TypeScript)
+- Required vs optional
+- Default values
 
-For each `.tsx` or `.jsx` file found, it extracts:
-- Component name (from filename)
-- Full file path
-- Relative path within app
-- Directory location
-- Whether it has props (detects `interface XProps` or `type XProps`)
-- Props interface definition (if exists)
+### 3. Control Generation
 
-### 3. API Endpoint
-
-The `/api/components` endpoint runs the scanner and returns:
-```json
-{
-  "success": true,
-  "data": {
-    "components": [...],
-    "directories": [...],
-    "counts": { "core": 450, "account": 25, ... },
-    "total": 550
-  }
-}
+For each prop type, generates appropriate input:
+```typescript
+string → text input
+number → number input
+boolean → checkbox
+"a" | "b" | "c" → dropdown
+ReactNode → textarea
 ```
 
-### 4. UI
+### 4. Visual Preview
 
-The main page (`app/page.tsx`) displays:
-- **Stats cards** - Component count per app (clickable filters)
-- **Filter controls** - Search, app selector, directory selector
-- **Component cards** - Each component with metadata and actions
-- **Actions** - Copy file path, copy import statement
+Preview component (`components/live-component-preview.tsx`):
+- Detects component type from name
+- Applies smart rendering rules
+- Shows mock with current props
+- Updates in real-time
 
 ---
 
-## Component Card Features
-
-Each component card shows:
+## Architecture
 
 ```
-┌─────────────────────────────────┐
-│ ComponentName        [core][Props]│
-│                                   │
-│ Directory: /auth                  │
-│ File: auth/signin-form.tsx        │
-│                                   │
-│ [Show Props Interface] ▼          │
-│ interface SignInFormProps {       │
-│   onSuccess: () => void;          │
-│ }                                 │
-│                                   │
-│ [Copy Path] [Copy Import]         │
-└─────────────────────────────────┘
+complete-catalogue/
+├── app/
+│   ├── page.tsx                    # Main catalogue grid
+│   ├── component/[app]/[...path]/  # Component detail page
+│   └── api/components/             # Component scan API
+├── components/
+│   ├── component-preview.tsx       # Preview with prop controls
+│   └── live-component-preview.tsx  # Visual rendering
+├── lib/
+│   ├── component-scanner.ts        # Discovers components
+│   └── component-renderer.ts       # Parses props, generates controls
+└── README.md                       # This file
 ```
 
 ---
 
-## Usage Examples
+## Examples
 
-### Finding a Component
+### Button Component
 
-1. **By Name:** Type "Button" in search
-2. **By App:** Click "geargrabber" stat card or use app dropdown
-3. **By Directory:** Select "/ui" from directory dropdown
-4. **Combined:** Search "Button" + filter to "core" app + "/ui" directory
-
-### Copying Import Statement
-
-Click "Copy Import" button to get:
+**Props detected:**
 ```typescript
-import { Button } from '@/components/ui/button';
+interface ButtonProps {
+  children: ReactNode;
+  variant?: "primary" | "secondary";
+  disabled?: boolean;
+  onClick?: () => void;
+}
 ```
 
-### Copying File Path
+**Controls generated:**
+- `children` → Textarea
+- `variant` → Dropdown (primary, secondary)
+- `disabled` → Checkbox
+- `onClick` → (function, no control)
 
-Click "Copy Path" to get full filesystem path:
+**Preview:**
+Renders as actual button with styles, updates when props change.
+
+### Card Component
+
+**Props detected:**
+```typescript
+interface CardProps {
+  title: string;
+  description?: string;
+  children?: ReactNode;
+}
 ```
-/Users/linc/Dev-Work/Crescender/crescender-core/components/ui/button.tsx
-```
+
+**Controls generated:**
+- `title` → Text input (required)
+- `description` → Text input (optional)
+- `children` → Textarea (optional)
+
+**Preview:**
+Shows card with border, displays title and description, updates live.
 
 ---
 
-## Technical Details
+## Keyboard Shortcuts
 
-### File Detection Rules
-
-**Includes:**
-- `.tsx` and `.jsx` files
-- Files that export React components
-
-**Excludes:**
-- `.test.*` files
-- `.spec.*` files
-- `.stories.*` files
-- Files starting with `.`
-- `node_modules`, `.next`, `dist`, `build` directories
-
-### Props Detection
-
-Detects these patterns:
-```typescript
-interface ComponentNameProps {
-  // ...
-}
-
-type ComponentNameProps = {
-  // ...
-}
-```
-
-### Performance
-
-- **Scan time:** ~500ms for 550+ components
-- **No caching:** Always reflects current state
-- **Server-side scanning:** Runs on API call, not build time
-
----
-
-## Maintenance
-
-### Zero Maintenance Required
-
-This catalogue is **completely automatic**:
-- No configuration files
-- No manual component registration
-- No imports needed
-- Just add components to apps, they appear here
-
-### Adding New Apps
-
-To add a new app to the catalogue:
-
-1. Edit `lib/component-scanner.ts`
-2. Add to `APP_PATHS` object:
-```typescript
-const APP_PATHS = {
-  // ... existing apps
-  newapp: "/path/to/newapp/components",
-};
-```
-3. Add to type:
-```typescript
-export interface ComponentInfo {
-  app: "core" | "account" | "clavet" | "geargrabber" | "newapp";
-  // ...
-}
-```
-
-That's it!
+- `Ctrl/Cmd + K` - Focus search (planned)
+- `Esc` - Clear filters (planned)
 
 ---
 
@@ -223,95 +236,135 @@ That's it!
 
 ### For Developers
 
-- **Quick Reference:** Find any component instantly
-- **Avoid Duplication:** See what exists before creating new components
-- **Copy/Paste:** Get import statements ready to use
-- **Cross-App Discovery:** Find components in other apps
+✅ **Quick Reference** - Find any component instantly with visual preview  
+✅ **Avoid Duplication** - See what exists before creating new components  
+✅ **Copy/Paste Ready** - Get import statements and usage examples  
+✅ **Prop Discovery** - See all available props and their types  
+✅ **Visual Testing** - Test different prop combinations quickly  
+
+### For Designers
+
+✅ **Component Library** - Browse all UI components visually  
+✅ **Style Guide** - See consistent design patterns  
+✅ **Variants** - Explore different states and configurations  
 
 ### For Team
 
-- **Visibility:** See all UI components in one place
-- **Consistency:** Identify duplicate components across apps
-- **Documentation:** Props interfaces shown inline
-- **Onboarding:** New developers can browse all components
-
-### For Codebase
-
-- **Single Source of Truth:** One place to see all components
-- **No Manual Updates:** Always current
-- **Cross-App Patterns:** Identify opportunities for shared components
+✅ **Onboarding** - New developers can explore components visually  
+✅ **Documentation** - Self-documenting with generated examples  
+✅ **Consistency** - Identify duplicate or similar components  
+✅ **Planning** - See what components are available for new features  
 
 ---
 
-## Comparison to Old Catalogue
+## Comparison to Storybook
 
-### Old (in crescender-core and clavet)
+### Similar To Storybook
+✅ Component catalogue  
+✅ Props controls  
+✅ Visual previews  
+✅ Documentation  
 
-- ❌ Manual configuration
-- ❌ Part of main app build
-- ❌ Adds build overhead
-- ❌ Limited to single app
-- ❌ Requires manual updates
+### Different From Storybook
+- **Automatic:** No manual story files needed
+- **Lightweight:** Simpler, faster to set up
+- **Mock-based:** Doesn't require full component mounting
+- **Cross-app:** Discovers from multiple apps automatically
 
-### New (complete-catalogue)
+### Trade-offs
 
-- ✅ Automatic discovery
-- ✅ Standalone app (no build overhead)
-- ✅ Runs locally only
-- ✅ Covers all apps
-- ✅ Zero maintenance
+**Pros:**
+- Zero maintenance (no story files to write)
+- Automatic discovery
+- Fast and lightweight
+- Cross-app discovery
 
----
-
-## Deployment
-
-**This app is NOT deployed.** It runs locally only.
-
-### Why Local Only?
-
-1. **Development Tool:** Only useful during development
-2. **File System Access:** Needs direct access to source files
-3. **No Production Value:** Not needed for end users
-4. **Security:** Shouldn't expose source code structure publicly
-
-### Git Repository
-
-This app should be:
-- ✅ Committed to git
-- ✅ Pushed to GitHub (in a separate repo or monorepo)
-- ❌ NOT deployed to Vercel/production
+**Cons:**
+- Mock previews (not real rendering)
+- Less control over examples
+- No addons ecosystem
+- Simpler prop controls
 
 ---
 
 ## Future Enhancements
 
 Possible additions:
-- [ ] Component preview/rendering (tricky with external imports)
-- [ ] Usage examples from source code
-- [ ] Dependency graph (which components use which)
-- [ ] Export statistics (component size, complexity)
-- [ ] Duplicate detection (similar component names)
-- [ ] Hot reload (watch file changes, update without refresh)
+
+### Enhanced Rendering
+- [ ] Actual component imports (with providers)
+- [ ] Theme switching
+- [ ] Responsive preview (mobile/tablet/desktop)
+- [ ] Dark/light mode toggle
+
+### Better Controls
+- [ ] Array prop editing
+- [ ] Object prop editing
+- [ ] Function prop testing
+- [ ] Slot/children editing
+
+### Documentation
+- [ ] JSDoc comment extraction
+- [ ] Usage examples from source
+- [ ] Component relationships graph
+- [ ] Dependency tracking
+
+### Developer Tools
+- [ ] Hot reload on component changes
+- [ ] Export component sets
+- [ ] Generate Storybook stories
+- [ ] Accessibility checks
+
+### Search & Filter
+- [ ] Full-text search in source
+- [ ] Filter by prop types
+- [ ] Filter by dependencies
+- [ ] Saved filter presets
 
 ---
 
 ## Troubleshooting
-
-### "Directory not found" errors
-
-Check that paths in `APP_PATHS` are correct for your system.
 
 ### Components not appearing
 
 1. Check file extension (must be `.tsx` or `.jsx`)
 2. Check it's not excluded (test files, etc.)
 3. Check `components` directory exists in that app
+4. Check console for scan errors
 
-### Slow scanning
+### Props not detected
 
-Normal for 500+ components. Optimize by:
-- Excluding more directories
-- Caching results (but loses real-time benefit)
+1. Ensure props use TypeScript interface/type
+2. Props interface must be named `*Props`
+3. Check TypeScript syntax is correct
+
+### Preview not rendering correctly
+
+This is expected - preview is mock-based. For accurate rendering, check the actual app.
+
+---
+
+## Maintenance
+
+### Zero Maintenance Required! 🎉
+
+This catalogue is **completely automatic**:
+- ✅ No configuration files
+- ✅ No manual component registration
+- ✅ No imports needed
+- ✅ No story files to write
+
+Just add components to apps, they appear here automatically.
+
+---
+
+## Tech Stack
+
+- **Framework:** Next.js 16 with App Router
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Parsing:** Custom TypeScript parser
+- **Rendering:** React with mock components
 
 ---
 
@@ -319,13 +372,11 @@ Normal for 500+ components. Optimize by:
 
 Part of the Crescender ecosystem. Internal use only.
 
-## Contact
-
-Questions? Check the main Crescender documentation or ask the team.
-
 ---
 
-**Status:** Production Ready ✅  
-**Version:** 1.0.0  
+**Status:** Production Ready with Visual Previews ✅  
+**Version:** 2.0.0 (now with live previews!)  
 **Last Updated:** 5/Dec/2025  
-**Maintainer:** Auto-maintained (zero manual work required)
+**Components Catalogued:** 550+  
+**Scan Time:** ~500ms  
+**Maintenance Required:** Zero 🎉

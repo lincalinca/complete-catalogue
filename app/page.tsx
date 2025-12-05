@@ -295,26 +295,34 @@ export default function CataloguePage() {
               )}
 
               {/* Actions */}
-              <div className="mt-4 pt-3 border-t border-purple-500/20 flex gap-2">
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(component.path);
-                  }}
-                  className="flex-1 px-3 py-1.5 bg-purple-500/10 border border-purple-500/50 rounded text-xs text-purple-300 hover:bg-purple-500/20 transition-colors"
+              <div className="mt-4 pt-3 border-t border-purple-500/20 flex flex-col gap-2">
+                <a
+                  href={`/component/${component.app}/${component.relativePath}`}
+                  className="px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded text-xs text-white font-medium hover:from-purple-600 hover:to-pink-600 transition-all text-center"
                 >
-                  Copy Path
-                </button>
-                <button
-                  onClick={() => {
-                    const importPath = `@/components${component.directory}/${component.name}`;
-                    navigator.clipboard.writeText(
-                      `import { ${component.name} } from '${importPath}';`
-                    );
-                  }}
-                  className="flex-1 px-3 py-1.5 bg-blue-500/10 border border-blue-500/50 rounded text-xs text-blue-300 hover:bg-blue-500/20 transition-colors"
-                >
-                  Copy Import
-                </button>
+                  View Preview & Props →
+                </a>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(component.path);
+                    }}
+                    className="flex-1 px-3 py-1.5 bg-purple-500/10 border border-purple-500/50 rounded text-xs text-purple-300 hover:bg-purple-500/20 transition-colors"
+                  >
+                    Copy Path
+                  </button>
+                  <button
+                    onClick={() => {
+                      const importPath = `@/components${component.directory}/${component.name}`;
+                      navigator.clipboard.writeText(
+                        `import { ${component.name} } from '${importPath}';`
+                      );
+                    }}
+                    className="flex-1 px-3 py-1.5 bg-blue-500/10 border border-blue-500/50 rounded text-xs text-blue-300 hover:bg-blue-500/20 transition-colors"
+                  >
+                    Copy Import
+                  </button>
+                </div>
               </div>
             </div>
           ))}
