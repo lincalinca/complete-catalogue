@@ -1,4 +1,4 @@
-import type { StorybookConfig } from '@storybook/react-webpack5';
+import type { StorybookConfig } from '@storybook/nextjs-vite';
 import path from 'path';
 
 const config: StorybookConfig = {
@@ -9,17 +9,13 @@ const config: StorybookConfig = {
     '@storybook/addon-interactions',
   ],
   framework: {
-    name: '@storybook/react-webpack5',
+    name: '@storybook/nextjs-vite',
     options: {},
   },
   docs: {
     autodocs: 'tag',
   },
-  typescript: {
-    check: false,
-    reactDocgen: false,
-  },
-  webpackFinal: async (config) => {
+  viteFinal: async (config) => {
     // Add path aliases for crescender-core imports
     if (config.resolve) {
       const corePath = path.resolve(__dirname, '../../crescender-core');
@@ -30,23 +26,6 @@ const config: StorybookConfig = {
         '@/lib': path.resolve(corePath, 'lib'),
       };
     }
-
-    // Ensure JSX files are processed by babel-loader
-    if (config.module?.rules) {
-      // Find and update the JS/JSX rule
-      const jsRuleIndex = config.module.rules.findIndex(
-        (rule: any) => rule.test && rule.test.toString().includes('jsx?')
-      );
-      
-      if (jsRuleIndex >= 0) {
-        const jsRule = config.module.rules[jsRuleIndex];
-        // Ensure it includes .jsx files
-        if (jsRule.test && !jsRule.test.toString().includes('jsx')) {
-          jsRule.test = /\.(mjs|jsx?|tsx?)$/;
-        }
-      }
-    }
-
     return config;
   },
 };
